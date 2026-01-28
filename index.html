@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hop Road - Endless Crossing Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="ui-overlay">
+            <div id="score-display">
+                <span id="score">0</span>
+            </div>
+            <div id="coins-display">
+                <span class="coin-icon">●</span>
+                <span id="coins">0</span>
+            </div>
+        </div>
+
+        <div id="start-screen" class="screen">
+            <h1>HOP ROAD</h1>
+            <p>Een eindeloos oversteekspel</p>
+            <div class="controls-info">
+                <p><strong>Besturing:</strong></p>
+                <p>↑ W - Vooruit springen</p>
+                <p>← A - Links</p>
+                <p>↓ S - Achteruit</p>
+                <p>→ D - Rechts</p>
+                <p>SPATIE - Snel vooruit</p>
+            </div>
+            <button id="start-btn">START SPEL</button>
+        </div>
+
+        <div id="game-over-screen" class="screen hidden">
+            <h1>GAME OVER</h1>
+            <p>Score: <span id="final-score">0</span></p>
+            <p>Munten: <span id="final-coins">0</span></p>
+            <p>Hoogste score: <span id="high-score">0</span></p>
+            <button id="restart-btn">OPNIEUW SPELEN</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
