@@ -1,3 +1,7 @@
+/* ============================================
+   HOP ROAD - Styles
+   ============================================ */
+
 * {
     margin: 0;
     padding: 0;
@@ -5,13 +9,14 @@
 }
 
 body {
-    background: #1a1a2e;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, sans-serif;
     overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
 }
 
 #game-container {
@@ -20,6 +25,9 @@ body {
     height: 100vh;
     max-width: 800px;
     max-height: 600px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
 #gameCanvas {
@@ -28,52 +36,57 @@ body {
     height: 100%;
     background: #87CEEB;
     image-rendering: pixelated;
+    image-rendering: crisp-edges;
 }
 
+/* UI Overlay */
 #ui-overlay {
     position: absolute;
-    top: 20px;
-    left: 20px;
-    right: 20px;
+    top: 15px;
+    left: 15px;
+    right: 15px;
     display: flex;
     justify-content: space-between;
     pointer-events: none;
     z-index: 10;
 }
 
-#score-display {
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
+#score-display,
+#coins-display {
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     padding: 10px 20px;
     border-radius: 25px;
-    font-size: 24px;
-    font-weight: bold;
-    min-width: 80px;
+    font-size: 22px;
+    font-weight: 700;
+    min-width: 70px;
     text-align: center;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+#score-display {
+    color: #FFFFFF;
 }
 
 #coins-display {
-    background: rgba(0, 0, 0, 0.7);
     color: #FFD700;
-    padding: 10px 20px;
-    border-radius: 25px;
-    font-size: 24px;
-    font-weight: bold;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
 .coin-icon {
-    font-size: 20px;
-    animation: pulse 1s ease-in-out infinite;
+    font-size: 18px;
+    animation: coinPulse 1.5s ease-in-out infinite;
 }
 
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); }
+@keyframes coinPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.15); opacity: 0.8; }
 }
 
+/* Screens */
 .screen {
     position: absolute;
     top: 0;
@@ -84,9 +97,10 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.9);
     color: white;
     z-index: 100;
+    padding: 20px;
 }
 
 .screen.hidden {
@@ -94,68 +108,128 @@ body {
 }
 
 .screen h1 {
-    font-size: 48px;
-    margin-bottom: 20px;
-    text-shadow: 3px 3px 0 #4CAF50;
+    font-size: 52px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    text-shadow:
+        4px 4px 0 #FF6B35,
+        -1px -1px 0 #FF6B35,
+        1px -1px 0 #FF6B35,
+        -1px 1px 0 #FF6B35;
     letter-spacing: 4px;
+    text-transform: uppercase;
 }
 
-.screen p {
-    font-size: 18px;
-    margin-bottom: 10px;
-    color: #ccc;
+.screen .subtitle {
+    font-size: 16px;
+    color: #aaa;
+    margin-bottom: 25px;
 }
 
 .controls-info {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
     padding: 20px 30px;
-    border-radius: 10px;
-    margin: 20px 0;
+    border-radius: 12px;
+    margin: 15px 0;
     text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .controls-info p {
-    margin: 5px 0;
-    font-size: 16px;
+    margin: 6px 0;
+    font-size: 15px;
+    color: #ccc;
 }
 
 .controls-info strong {
-    color: #4CAF50;
+    color: #FF6B35;
 }
 
+/* Buttons */
 button {
-    background: #4CAF50;
+    background: linear-gradient(135deg, #FF6B35 0%, #D84315 100%);
     color: white;
     border: none;
-    padding: 15px 40px;
-    font-size: 20px;
+    padding: 16px 45px;
+    font-size: 18px;
+    font-weight: 700;
     border-radius: 30px;
     cursor: pointer;
     margin-top: 20px;
-    transition: all 0.3s ease;
-    font-weight: bold;
+    transition: all 0.2s ease;
     letter-spacing: 2px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
 }
 
 button:hover {
-    background: #66BB6A;
-    transform: scale(1.05);
-    box-shadow: 0 5px 20px rgba(76, 175, 80, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(255, 107, 53, 0.5);
 }
 
 button:active {
-    transform: scale(0.98);
+    transform: translateY(1px);
+    box-shadow: 0 2px 10px rgba(255, 107, 53, 0.3);
 }
 
-#final-score, #final-coins, #high-score {
-    color: #4CAF50;
-    font-weight: bold;
+/* High score hints */
+.highscore-hint {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #666;
+}
+
+.highscore-hint span,
+.highscore-display span {
+    color: #FF6B35;
+    font-weight: 700;
+}
+
+/* Game Over Screen */
+.score-container {
+    display: flex;
+    gap: 40px;
+    margin: 20px 0;
+}
+
+.score-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px 35px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.score-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+.score-value {
+    font-size: 36px;
+    font-weight: 800;
+    color: #FF6B35;
+}
+
+.score-value.coins {
+    color: #FFD700;
+}
+
+.highscore-display {
+    font-size: 16px;
+    color: #888;
+    margin-top: 10px;
 }
 
 /* Mobile responsiveness */
 @media (max-width: 600px) {
     .screen h1 {
-        font-size: 32px;
+        font-size: 36px;
     }
 
     .controls-info {
@@ -163,17 +237,51 @@ button:active {
     }
 
     .controls-info p {
-        font-size: 14px;
+        font-size: 13px;
     }
 
     button {
-        padding: 12px 30px;
+        padding: 14px 35px;
         font-size: 16px;
     }
 
-    #score-display, #coins-display {
+    #score-display,
+    #coins-display {
         font-size: 18px;
-        padding: 8px 15px;
+        padding: 8px 14px;
+    }
+
+    .score-container {
+        gap: 20px;
+    }
+
+    .score-item {
+        padding: 15px 25px;
+    }
+
+    .score-value {
+        font-size: 28px;
+    }
+}
+
+@media (max-height: 500px) {
+    .controls-info {
+        padding: 10px 15px;
+    }
+
+    .controls-info p {
+        margin: 3px 0;
+        font-size: 12px;
+    }
+
+    .screen h1 {
+        font-size: 28px;
+        margin-bottom: 5px;
+    }
+
+    button {
+        padding: 10px 30px;
+        margin-top: 10px;
     }
 }
 
@@ -182,8 +290,32 @@ button:active {
     .controls-info::after {
         content: "Of tik/veeg op het scherm!";
         display: block;
-        margin-top: 15px;
-        color: #4CAF50;
-        font-weight: bold;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        color: #FF6B35;
+        font-weight: 600;
+    }
+}
+
+/* Focus states for accessibility */
+button:focus {
+    outline: 3px solid rgba(255, 107, 53, 0.5);
+    outline-offset: 2px;
+}
+
+/* Smooth animations */
+@media (prefers-reduced-motion: no-preference) {
+    .screen {
+        animation: fadeIn 0.3s ease;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
     }
 }

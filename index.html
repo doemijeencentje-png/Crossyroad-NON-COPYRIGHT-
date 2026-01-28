@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Hop Road - Endless Crossing Game</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -22,7 +22,7 @@
 
         <div id="start-screen" class="screen">
             <h1>HOP ROAD</h1>
-            <p>Een eindeloos oversteekspel</p>
+            <p class="subtitle">Een eindeloos oversteekspel</p>
             <div class="controls-info">
                 <p><strong>Besturing:</strong></p>
                 <p>↑ W - Vooruit springen</p>
@@ -32,17 +32,26 @@
                 <p>SPATIE - Snel vooruit</p>
             </div>
             <button id="start-btn">START SPEL</button>
+            <p class="highscore-hint">Hoogste score: <span id="menu-high-score">0</span></p>
         </div>
 
         <div id="game-over-screen" class="screen hidden">
             <h1>GAME OVER</h1>
-            <p>Score: <span id="final-score">0</span></p>
-            <p>Munten: <span id="final-coins">0</span></p>
-            <p>Hoogste score: <span id="high-score">0</span></p>
+            <div class="score-container">
+                <div class="score-item">
+                    <span class="score-label">Score</span>
+                    <span class="score-value" id="final-score">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">Munten</span>
+                    <span class="score-value coins" id="final-coins">0</span>
+                </div>
+            </div>
+            <p class="highscore-display">Hoogste: <span id="high-score">0</span></p>
             <button id="restart-btn">OPNIEUW SPELEN</button>
         </div>
     </div>
 
-    <script src="game.js"></script>
+    <script type="module" src="src/game.js"></script>
 </body>
 </html>
