@@ -514,37 +514,178 @@ export class Renderer {
         const x = coin.x + this.width / 2;
         const bounce = Math.sin(Date.now() * CONFIG.COIN_BOUNCE_SPEED + coin.animOffset)
             * CONFIG.COIN_BOUNCE_HEIGHT;
-        const coinY = y - 12 + bounce;
+        const coinY = y - 14 + bounce;
 
-        // Shadow
-        this.ctx.fillStyle = CONFIG.COLORS.shadow;
-        this.ctx.beginPath();
-        this.ctx.ellipse(x, y + 3, 10, 4, 0, 0, Math.PI * 2);
-        this.ctx.fill();
+        // Slow rotation for 3D effect
+        const rotation = (Date.now() * 0.002 + coin.animOffset) % (Math.PI * 2);
+        const tiltX = Math.cos(rotation) * 0.3; // How much the coin tilts (-0.3 to 0.3)
 
-        // Coin body
-        this.ctx.fillStyle = CONFIG.COLORS.coin;
-        this.ctx.beginPath();
-        this.ctx.arc(x, coinY, 11, 0, Math.PI * 2);
-        this.ctx.fill();
+        this.draw3DVoxelCoin(x, coinY, y, tiltX);
+    }
 
-        // Inner ring
-        this.ctx.fillStyle = CONFIG.COLORS.coinDark;
-        this.ctx.beginPath();
-        this.ctx.arc(x, coinY, 8, 0, Math.PI * 2);
-        this.ctx.fill();
+    // Draw a 3D pixelated/voxel-style coin with cent symbol
+    draw3DVoxelCoin(x, y, groundY, tilt = 0) {
+        const ctx = this.ctx;
+        const size = 24; // Coin diameter
+        const depth = 6; // Coin thickness
+        const pixelSize = 3; // Size of each "voxel"
 
-        // Center
-        this.ctx.fillStyle = CONFIG.COLORS.coin;
-        this.ctx.beginPath();
-        this.ctx.arc(x, coinY, 5, 0, Math.PI * 2);
-        this.ctx.fill();
+        // Shadow on ground
+        ctx.fillStyle = CONFIG.COLORS.shadow;
+        ctx.beginPath();
+        ctx.ellipse(x, groundY + 3, 12, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
 
-        // Highlight
-        this.ctx.fillStyle = CONFIG.COLORS.coinHighlight;
-        this.ctx.beginPath();
-        this.ctx.arc(x - 3, coinY - 4, 3, 0, Math.PI * 2);
-        this.ctx.fill();
+        // Pixelated circle pattern (which pixels to draw)
+        // This creates an 8x8 pixelated circle
+        const circlePattern = [
+            [0,0,1,1,1,1,0,0],
+            [0,1,1,1,1,1,1,0],
+            [1,1,1,1,1,1,1,1],
+            [1,1,1,1,1,1,1,1],
+            [1,1,1,1,1,1,1,1],
+            [1,1,1,1,1,1,1,1],
+            [0,1,1,1,1,1,1,0],
+            [0,0,1,1,1,1,0,0]
+        ];
+
+        // Cent symbol pattern (¢) - fits within the coin
+        // Using lighter color for the symbol
+        const centPattern = [
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,1,1,0,0,0],
+            [0,0,1,0,0,1,0,0],
+            [0,1,1,0,0,0,0,0],
+            [0,1,1,0,0,0,0,0],
+            [0,0,1,0,0,1,0,0],
+            [0,0,0,1,1,0,0,0],
+            [0,0,0,0,0,0,0,0]
+        ];
+
+        // Vertical line through cent symbol
+        const centLinePattern = [
+            [0,0,0,1,0,0,0,0],
+            [0,0,0,1,0,0,0,0],
+            [0,0,0,1,0,0,0,0],
+            [0,0,0,1,0,0,0,0],
+            [0,0,0,1,0,0,0,0],
+            [0,0,0,1,0,0,0,0],
+            [0,0,0,1,0,0,0,0],
+            [0,0,0,0,0,0,0,0]
+        ];
+
+        const gridSize = 8;
+        const startX = x - (gridSize * pixelSize) / 2;
+        const startY = y - (gridSize * pixelSize) / 2;
+
+        // Calculate scale based on tilt (for 3D rotation effect)
+        const scaleX = 0.7 + Math.abs(tilt) * 0.3;
+        const showingFront = tilt >= 0;
+
+        // Draw the coin edge (3D depth) - visible when tilted
+        if (Math.abs(tilt) > 0.1) {
+            const edgeOffset = tilt * depth * 2;
+            ctx.fillStyle = CONFIG.COLORS.coinEdge;
+
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    if (circlePattern[row][col]) {
+                        const px = startX + col * pixelSize * scaleX + (tilt < 0 ? -edgeOffset : 0);
+                        const py = startY + row * pixelSize;
+
+                        // Draw edge pixels
+                        ctx.fillRect(
+                            px + (tilt > 0 ? pixelSize * scaleX : -Math.abs(edgeOffset)),
+                            py,
+                            Math.abs(edgeOffset),
+                            pixelSize
+                        );
+                    }
+                }
+            }
+        }
+
+        // Draw the coin face (main body)
+        for (let row = 0; row < gridSize; row++) {
+            for (let col = 0; col < gridSize; col++) {
+                if (circlePattern[row][col]) {
+                    const px = startX + col * pixelSize * scaleX;
+                    const py = startY + row * pixelSize;
+
+                    // Determine pixel color
+                    let color = CONFIG.COLORS.coin; // Main green
+
+                    // Inner darker ring (1 pixel from edge)
+                    const distFromCenter = Math.sqrt(
+                        Math.pow(col - 3.5, 2) + Math.pow(row - 3.5, 2)
+                    );
+
+                    if (distFromCenter > 2.8 && distFromCenter < 3.5) {
+                        color = CONFIG.COLORS.coinDark; // Darker ring
+                    }
+
+                    // Draw cent symbol in light green (only when showing front)
+                    if (showingFront && centPattern[row][col]) {
+                        color = CONFIG.COLORS.coinLight;
+                    }
+                    if (showingFront && centLinePattern[row][col]) {
+                        color = CONFIG.COLORS.coinLight;
+                    }
+
+                    // Highlight on top-left pixels
+                    if ((row === 1 || row === 2) && (col === 2 || col === 3) && circlePattern[row][col]) {
+                        if (!centPattern[row][col] && !centLinePattern[row][col]) {
+                            color = CONFIG.COLORS.coinHighlight;
+                        }
+                    }
+
+                    ctx.fillStyle = color;
+                    ctx.fillRect(px, py, pixelSize * scaleX + 0.5, pixelSize);
+                }
+            }
+        }
+
+        // Add slight outline for definition
+        ctx.strokeStyle = CONFIG.COLORS.coinEdge;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+
+        // Draw pixelated outline
+        for (let row = 0; row < gridSize; row++) {
+            for (let col = 0; col < gridSize; col++) {
+                if (circlePattern[row][col]) {
+                    const px = startX + col * pixelSize * scaleX;
+                    const py = startY + row * pixelSize;
+
+                    // Check if edge pixel
+                    const isEdge =
+                        row === 0 || row === gridSize - 1 ||
+                        col === 0 || col === gridSize - 1 ||
+                        !circlePattern[row - 1]?.[col] ||
+                        !circlePattern[row + 1]?.[col] ||
+                        !circlePattern[row]?.[col - 1] ||
+                        !circlePattern[row]?.[col + 1];
+
+                    if (isEdge) {
+                        ctx.fillStyle = CONFIG.COLORS.coinEdge;
+
+                        // Draw edge segments
+                        if (!circlePattern[row - 1]?.[col]) {
+                            ctx.fillRect(px, py, pixelSize * scaleX + 0.5, 1);
+                        }
+                        if (!circlePattern[row + 1]?.[col]) {
+                            ctx.fillRect(px, py + pixelSize - 1, pixelSize * scaleX + 0.5, 1);
+                        }
+                        if (!circlePattern[row]?.[col - 1]) {
+                            ctx.fillRect(px, py, 1, pixelSize);
+                        }
+                        if (!circlePattern[row]?.[col + 1]) {
+                            ctx.fillRect(px + pixelSize * scaleX - 1, py, 1, pixelSize);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     drawPlayer(player, row) {

@@ -131,10 +131,12 @@ export const CONFIG = {
         lilyFlower: '#EC407A',
         lilyCenter: '#FFEE58',
 
-        // Coins
-        coin: '#FFD700',
-        coinDark: '#FFA000',
-        coinHighlight: '#FFECB3',
+        // Coins - Green voxel style (like pixel art cent coin)
+        coin: '#4CAF50',           // Main green
+        coinDark: '#388E3C',       // Darker green for depth
+        coinLight: '#81C784',      // Light green for symbol
+        coinHighlight: '#C8E6C9',  // Highlight/shine
+        coinEdge: '#2E7D32',       // Edge/rim color
 
         // Effects
         shadow: 'rgba(0, 0, 0, 0.25)',
