@@ -514,178 +514,212 @@ export class Renderer {
         const x = coin.x + this.width / 2;
         const bounce = Math.sin(Date.now() * CONFIG.COIN_BOUNCE_SPEED + coin.animOffset)
             * CONFIG.COIN_BOUNCE_HEIGHT;
-        const coinY = y - 14 + bounce;
+        const coinY = y - 20 + bounce;
 
-        // Slow rotation for 3D effect
-        const rotation = (Date.now() * 0.002 + coin.animOffset) % (Math.PI * 2);
-        const tiltX = Math.cos(rotation) * 0.3; // How much the coin tilts (-0.3 to 0.3)
+        // Slow rotation for 3D spinning effect
+        const rotation = (Date.now() * 0.003 + coin.animOffset) % (Math.PI * 2);
 
-        this.draw3DVoxelCoin(x, coinY, y, tiltX);
+        this.drawIsometricVoxelCoin(x, coinY, y, rotation);
     }
 
-    // Draw a 3D pixelated/voxel-style coin with cent symbol
-    draw3DVoxelCoin(x, y, groundY, tilt = 0) {
+    // Draw a single isometric voxel cube
+    drawVoxelCube(x, y, size, topColor, frontColor, rightColor) {
         const ctx = this.ctx;
-        const size = 24; // Coin diameter
-        const depth = 6; // Coin thickness
-        const pixelSize = 3; // Size of each "voxel"
+        const h = size * 0.5; // Height ratio for isometric
 
-        // Shadow on ground
-        ctx.fillStyle = CONFIG.COLORS.shadow;
+        // Top face (brightest)
+        ctx.fillStyle = topColor;
         ctx.beginPath();
-        ctx.ellipse(x, groundY + 3, 12, 5, 0, 0, Math.PI * 2);
+        ctx.moveTo(x, y - h);
+        ctx.lineTo(x + size / 2, y);
+        ctx.lineTo(x, y + h);
+        ctx.lineTo(x - size / 2, y);
+        ctx.closePath();
         ctx.fill();
 
-        // Pixelated circle pattern (which pixels to draw)
-        // This creates an 8x8 pixelated circle
+        // Left face (medium)
+        ctx.fillStyle = frontColor;
+        ctx.beginPath();
+        ctx.moveTo(x - size / 2, y);
+        ctx.lineTo(x, y + h);
+        ctx.lineTo(x, y + h + size);
+        ctx.lineTo(x - size / 2, y + size);
+        ctx.closePath();
+        ctx.fill();
+
+        // Right face (darkest)
+        ctx.fillStyle = rightColor;
+        ctx.beginPath();
+        ctx.moveTo(x + size / 2, y);
+        ctx.lineTo(x, y + h);
+        ctx.lineTo(x, y + h + size);
+        ctx.lineTo(x + size / 2, y + size);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    // Draw 3D isometric voxel coin matching the reference image exactly
+    drawIsometricVoxelCoin(centerX, centerY, groundY, rotation) {
+        const ctx = this.ctx;
+        const voxelSize = 3;  // Size of each voxel cube
+
+        // Colors matching the reference image
+        const mainGreen = { top: '#5DBE5D', front: '#4CAF50', right: '#388E3C' };
+        const lightGreen = { top: '#A5D6A7', front: '#81C784', right: '#66BB6A' };
+        const darkGreen = { top: '#43A047', front: '#388E3C', right: '#2E7D32' };
+        const edgeGreen = { top: '#388E3C', front: '#2E7D32', right: '#1B5E20' };
+
+        // 16x16 pixelated circle for the coin face (higher resolution)
         const circlePattern = [
-            [0,0,1,1,1,1,0,0],
-            [0,1,1,1,1,1,1,0],
-            [1,1,1,1,1,1,1,1],
-            [1,1,1,1,1,1,1,1],
-            [1,1,1,1,1,1,1,1],
-            [1,1,1,1,1,1,1,1],
-            [0,1,1,1,1,1,1,0],
-            [0,0,1,1,1,1,0,0]
+            [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+            [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+            [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+            [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+            [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+            [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+            [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+            [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+            [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0]
         ];
 
-        // Cent symbol pattern (¢) - fits within the coin
-        // Using lighter color for the symbol
-        const centPattern = [
-            [0,0,0,0,0,0,0,0],
-            [0,0,0,1,1,0,0,0],
-            [0,0,1,0,0,1,0,0],
-            [0,1,1,0,0,0,0,0],
-            [0,1,1,0,0,0,0,0],
-            [0,0,1,0,0,1,0,0],
-            [0,0,0,1,1,0,0,0],
-            [0,0,0,0,0,0,0,0]
+        // Inner ring pattern (darker groove)
+        const ringPattern = [
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+            [0,0,0,1,1,1,0,0,0,0,1,1,1,0,0,0],
+            [0,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0],
+            [0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0],
+            [0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0],
+            [0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0],
+            [0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0],
+            [0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0],
+            [0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0],
+            [0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0],
+            [0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0],
+            [0,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0],
+            [0,0,0,1,1,1,0,0,0,0,1,1,1,0,0,0],
+            [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         ];
 
-        // Vertical line through cent symbol
-        const centLinePattern = [
-            [0,0,0,1,0,0,0,0],
-            [0,0,0,1,0,0,0,0],
-            [0,0,0,1,0,0,0,0],
-            [0,0,0,1,0,0,0,0],
-            [0,0,0,1,0,0,0,0],
-            [0,0,0,1,0,0,0,0],
-            [0,0,0,1,0,0,0,0],
-            [0,0,0,0,0,0,0,0]
+        // Cent symbol (¢) - C shape with vertical line
+        const centSymbol = [
+            [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0],
+            [0,0,0,0,1,1,0,1,0,1,1,0,0,0,0,0],
+            [0,0,0,1,1,0,0,1,0,0,1,0,0,0,0,0],
+            [0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0],
+            [0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0],
+            [0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0],
+            [0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0],
+            [0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0],
+            [0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0],
+            [0,0,0,1,1,0,0,1,0,0,1,0,0,0,0,0],
+            [0,0,0,0,1,1,0,1,0,1,1,0,0,0,0,0],
+            [0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0]
         ];
 
-        const gridSize = 8;
-        const startX = x - (gridSize * pixelSize) / 2;
-        const startY = y - (gridSize * pixelSize) / 2;
+        const gridSize = 16;
+        const coinDepth = 4; // How many voxels deep the coin is
 
-        // Calculate scale based on tilt (for 3D rotation effect)
-        const scaleX = 0.7 + Math.abs(tilt) * 0.3;
-        const showingFront = tilt >= 0;
+        // Calculate coin tilt based on rotation (simulates 3D rotation)
+        const tiltAngle = Math.PI / 6; // 30 degree base tilt like in image
+        const rotationScale = Math.cos(rotation);
 
-        // Draw the coin edge (3D depth) - visible when tilted
-        if (Math.abs(tilt) > 0.1) {
-            const edgeOffset = tilt * depth * 2;
-            ctx.fillStyle = CONFIG.COLORS.coinEdge;
+        // Shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.beginPath();
+        ctx.ellipse(centerX, groundY + 5, 18, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        const offsetX = centerX - (gridSize * voxelSize) / 2;
+        const offsetY = centerY - (gridSize * voxelSize) / 2;
+
+        // We need to draw back-to-front for proper depth sorting
+        // Draw the coin edge (depth) first
+        for (let d = coinDepth - 1; d >= 0; d--) {
+            const depthOffset = d * voxelSize * 0.4 * rotationScale;
 
             for (let row = 0; row < gridSize; row++) {
                 for (let col = 0; col < gridSize; col++) {
-                    if (circlePattern[row][col]) {
-                        const px = startX + col * pixelSize * scaleX + (tilt < 0 ? -edgeOffset : 0);
-                        const py = startY + row * pixelSize;
+                    if (!circlePattern[row][col]) continue;
 
-                        // Draw edge pixels
-                        ctx.fillRect(
-                            px + (tilt > 0 ? pixelSize * scaleX : -Math.abs(edgeOffset)),
-                            py,
-                            Math.abs(edgeOffset),
-                            pixelSize
-                        );
-                    }
-                }
-            }
-        }
-
-        // Draw the coin face (main body)
-        for (let row = 0; row < gridSize; row++) {
-            for (let col = 0; col < gridSize; col++) {
-                if (circlePattern[row][col]) {
-                    const px = startX + col * pixelSize * scaleX;
-                    const py = startY + row * pixelSize;
-
-                    // Determine pixel color
-                    let color = CONFIG.COLORS.coin; // Main green
-
-                    // Inner darker ring (1 pixel from edge)
-                    const distFromCenter = Math.sqrt(
-                        Math.pow(col - 3.5, 2) + Math.pow(row - 3.5, 2)
-                    );
-
-                    if (distFromCenter > 2.8 && distFromCenter < 3.5) {
-                        color = CONFIG.COLORS.coinDark; // Darker ring
-                    }
-
-                    // Draw cent symbol in light green (only when showing front)
-                    if (showingFront && centPattern[row][col]) {
-                        color = CONFIG.COLORS.coinLight;
-                    }
-                    if (showingFront && centLinePattern[row][col]) {
-                        color = CONFIG.COLORS.coinLight;
-                    }
-
-                    // Highlight on top-left pixels
-                    if ((row === 1 || row === 2) && (col === 2 || col === 3) && circlePattern[row][col]) {
-                        if (!centPattern[row][col] && !centLinePattern[row][col]) {
-                            color = CONFIG.COLORS.coinHighlight;
-                        }
-                    }
-
-                    ctx.fillStyle = color;
-                    ctx.fillRect(px, py, pixelSize * scaleX + 0.5, pixelSize);
-                }
-            }
-        }
-
-        // Add slight outline for definition
-        ctx.strokeStyle = CONFIG.COLORS.coinEdge;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-
-        // Draw pixelated outline
-        for (let row = 0; row < gridSize; row++) {
-            for (let col = 0; col < gridSize; col++) {
-                if (circlePattern[row][col]) {
-                    const px = startX + col * pixelSize * scaleX;
-                    const py = startY + row * pixelSize;
-
-                    // Check if edge pixel
-                    const isEdge =
-                        row === 0 || row === gridSize - 1 ||
-                        col === 0 || col === gridSize - 1 ||
+                    // Only draw edge voxels for the sides
+                    const isEdgeVoxel =
                         !circlePattern[row - 1]?.[col] ||
                         !circlePattern[row + 1]?.[col] ||
                         !circlePattern[row]?.[col - 1] ||
                         !circlePattern[row]?.[col + 1];
 
-                    if (isEdge) {
-                        ctx.fillStyle = CONFIG.COLORS.coinEdge;
+                    if (d > 0 && !isEdgeVoxel) continue;
 
-                        // Draw edge segments
-                        if (!circlePattern[row - 1]?.[col]) {
-                            ctx.fillRect(px, py, pixelSize * scaleX + 0.5, 1);
-                        }
-                        if (!circlePattern[row + 1]?.[col]) {
-                            ctx.fillRect(px, py + pixelSize - 1, pixelSize * scaleX + 0.5, 1);
-                        }
-                        if (!circlePattern[row]?.[col - 1]) {
-                            ctx.fillRect(px, py, 1, pixelSize);
-                        }
-                        if (!circlePattern[row]?.[col + 1]) {
-                            ctx.fillRect(px + pixelSize * scaleX - 1, py, 1, pixelSize);
-                        }
+                    const x = offsetX + col * voxelSize + depthOffset;
+                    const y = offsetY + row * voxelSize;
+
+                    // Determine color based on pattern
+                    let colors = mainGreen;
+
+                    if (ringPattern[row][col]) {
+                        colors = darkGreen;
                     }
+
+                    // Only show cent symbol on front face
+                    if (d === 0 && centSymbol[row][col] && rotationScale > 0) {
+                        colors = lightGreen;
+                    }
+
+                    // Draw as simple 3D block for performance
+                    this.drawSimpleVoxel(x, y, voxelSize, colors, d === 0);
                 }
             }
         }
+
+        // Draw raised cent symbol (protrudes from surface)
+        if (rotationScale > 0.3) {
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    if (!centSymbol[row][col]) continue;
+
+                    const x = offsetX + col * voxelSize;
+                    const y = offsetY + row * voxelSize;
+
+                    // Draw raised voxel
+                    this.drawSimpleVoxel(x - voxelSize * 0.3, y - voxelSize * 0.3, voxelSize, lightGreen, true);
+                }
+            }
+        }
+    }
+
+    // Simplified voxel drawing for performance
+    drawSimpleVoxel(x, y, size, colors, isFront) {
+        const ctx = this.ctx;
+
+        // Main face
+        ctx.fillStyle = colors.front;
+        ctx.fillRect(x, y, size, size);
+
+        // Top highlight
+        ctx.fillStyle = colors.top;
+        ctx.fillRect(x, y, size, size * 0.3);
+
+        // Right shadow
+        ctx.fillStyle = colors.right;
+        ctx.fillRect(x + size * 0.7, y, size * 0.3, size);
+
+        // Outline for definition
+        ctx.strokeStyle = colors.right;
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(x, y, size, size);
     }
 
     drawPlayer(player, row) {
